@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signup Form</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .hidden {
+      display: none;
+    }
+    .error {
+      color: red;
+    }
+    .valid {
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h2 class="text-center mb-4">Sign Up</h2>
+    
+    <!-- User type selector -->
+    <div class="form-group mb-4">
+      <label for="userType">Select User Type:</label>
+      <select class="form-select" id="userType" onchange="toggleForm()">
+        <option value="normal">Normal User</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    
+    <!-- Admin Signup Form -->
+    <form id="adminForm" class="hidden">
+      <h4 class="mb-3">Admin Signup</h4>
+      <div class="form-group mb-3">
+        <label for="adminName">Name</label>
+        <input type="text" class="form-control" id="adminName" placeholder="Enter name" required>
+      </div>
+      <div class="form-group mb-3">
+        <label for="adminAddress">Address</label>
+        <input type="text" class="form-control" id="adminAddress" placeholder="Enter address" required>
+      </div>
+      <div class="form-group mb-3">
+        <label for="adminEmail">Email</label>
+        <input type="email" class="form-control" id="adminEmail" placeholder="Enter email" required>
+      </div>
+      <div class="form-group mb-3">
+        <label for="adminPhone">Phone Number</label>
+        <input type="tel" class="form-control" id="adminPhone" placeholder="Enter phone number" required>
+      </div>
+      <div class="form-group mb-3">
+        <label for="adminID">Special Admin ID</label>
+        <input type="text" class="form-control" id="adminID" placeholder="Enter Admin ID" required>
+        <button type="button" class="btn btn-secondary mt-2" onclick="validateAdminID()">Validate Admin ID</button>
+        <span id="adminIDStatus" class="error"></span>
+      </div>
+      <div class="form-group mb-3">
+        <label for="adminPassword">Create Password</label>
+        <input type="password" class="form-control" id="adminPassword" placeholder="Create password" required>
+      </div>
+      <div class="form-group mb-3">
+        <label for="adminConfirmPassword">Re-enter Password</label>
+        <input type="password" class="form-control" id="adminConfirmPassword" placeholder="Re-enter password" required>
+        <span id="adminPasswordError" class="error"></span>
+      </div>
+      <button type="submit" class="btn btn-primary" onclick="validateAdminForm(event)">Submit</button>
+    </form>
+
+    <!-- Normal User Signup Form -->
+    <form id="userForm">
+      <h4 class="mb-3">Normal User Signup</h4>
+      <div class="form-group mb-3">
+        <label for="userName">Name</label>
+        <input type="text" class="form-control" id="userName" placeholder="Enter name" required>
+      </div>
+      <div class="form-group mb-3">
+        <label for="userAddress">Address</label>
+        <input type="text" class="form-control" id="userAddress" placeholder="Enter address" required>
+      </div>
+      <div class="form-group mb-3">
+        <label for="userEmail">Email</label>
+        <input type="email" class="form-control" id="userEmail" placeholder="Enter email" required>
+      </div>
+      <div class="form-group mb-3">
+        <label for="userPhone">Phone Number</label>
+        <input type="tel" class="form-control" id="userPhone" placeholder="Enter phone number" required>
+      </div>
+      <div class="form-group mb-3">
+        <label for="userPassword">Create Password</label>
+        <input type="password" class="form-control" id="userPassword" placeholder="Create password" required>
+      </div>
+      <div class="form-group mb-3">
+        <label for="userConfirmPassword">Re-enter Password</label>
+        <input type="password" class="form-control" id="userConfirmPassword" placeholder="Re-enter password" required>
+        <span id="userPasswordError" class="error"></span>
+      </div>
+      <button type="submit" class="btn btn-primary" onclick="validateUserForm(event)">Submit</button>
+    </form>
+  </div>
+
+  <script>
+    function toggleForm() {
+      const userType = document.getElementById('userType').value;
+      document.getElementById('adminForm').classList.toggle('hidden', userType !== 'admin');
+      document.getElementById('userForm').classList.toggle('hidden', userType !== 'normal');
+    }
+
+    function validatePassword(password, confirmPassword, errorElementId) {
+      const errorElement = document.getElementById(errorElementId);
+      if (password !== confirmPassword) {
+        errorElement.textContent = "Passwords do not match!";
+        return false;
+      } else {
+        errorElement.textContent = "";
+        return true;
+      }
+    }
+
+    // Simulating a database of valid admin IDs
+    const validAdminIDs = ["ADMIN123", "ADMIN456", "ADMIN789"];
+
+    function validateAdminID() {
+      const adminID = document.getElementById('adminID').value;
+      const statusElement = document.getElementById('adminIDStatus');
+      
+      if (validAdminIDs.includes(adminID)) {
+        statusElement.textContent = "Admin ID is valid!";
+        statusElement.classList.remove('error');
+        statusElement.classList.add('valid');
+      } else {
+        statusElement.textContent = "Invalid Admin ID!";
+        statusElement.classList.remove('valid');
+        statusElement.classList.add('error');
+      }
+    }
+
+    function redirectToLogin() {
+      // Redirect to login page after 3 seconds
+      setTimeout(function() {
+        window.location.href = "login.html"; // Change this URL to your actual login page
+      }, 3000); // 3-second pause before redirecting
+    }
+
+    function validateUserForm(event) {
+      event.preventDefault();
+      const password = document.getElementById('userPassword').value;
+      const confirmPassword = document.getElementById('userConfirmPassword').value;
+      if (validatePassword(password, confirmPassword, 'userPasswordError')) {
+        alert('User form submitted successfully! Redirecting to login page...');
+        redirectToLogin();  // Redirect after successful signup
+      }
+    }
+
+    function validateAdminForm(event) {
+      event.preventDefault();
+      const password = document.getElementById('adminPassword').value;
+      const confirmPassword = document.getElementById('adminConfirmPassword').value;
+      const adminIDStatus = document.getElementById('adminIDStatus').textContent;
+
+      if (adminIDStatus === "Admin ID is valid!") {
+        if (validatePassword(password, confirmPassword, 'adminPasswordError')) {
+          alert('Admin form submitted successfully! Redirecting to login page...');
+          redirectToLogin();  // Redirect after successful signup
+        }
+      } else {
+        alert('Please validate the Admin ID before submitting.');
+      }
+    }
+  </script>
+</body>
+</html>
