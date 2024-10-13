@@ -6,9 +6,6 @@
     <title>User Profile</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
-        .hidden {
-            display: none;
-        }
         .profile-picture {
             width: 150px;
             height: 150px;
@@ -33,69 +30,62 @@
 
         <!-- User Details Section -->
         <div id="userDetails">
-            <p><strong>Name:</strong> <span id="nameDisplay">John Doe</span></p>
-            <input type="text" id="nameInput" class="form-control hidden" value="John Doe">
-
-            <p><strong>Address:</strong> <span id="addressDisplay">123 Main St</span></p>
-            <input type="text" id="addressInput" class="form-control hidden" value="123 Main St">
-
-            <p><strong>Phone Number:</strong> <span id="phoneDisplay">123-456-7890</span></p>
-            <input type="text" id="phoneInput" class="form-control hidden" value="123-456-7890">
-
-            <p><strong>Email ID:</strong> <span id="emailDisplay">john@example.com</span></p>
-            <input type="email" id="emailInput" class="form-control hidden" value="john@example.com">
-
-            <p><strong>User ID:</strong> <span id="userIdDisplay">001</span></p>
-            <input type="text" id="userIdInput" class="form-control hidden" value="001" readonly>
+            <p><strong>Name:</strong> <span id="nameDisplay"></span></p>
+            <p><strong>Email ID:</strong> <span id="emailDisplay"></span></p>
+            <p><strong>User Type:</strong> <span id="userTypeDisplay"></span></p>
+            <p><strong>Phone Number:</strong> <span id="phoneDisplay"></span></p>
         </div>
-
-        <!-- Edit Button -->
-        <button id="editButton" class="btn btn-primary mt-3">Edit</button>
-        <button id="saveButton" class="btn btn-success mt-3 hidden">Save</button>
 
         <!-- Error Message -->
         <div id="errorMessage" class="error"></div>
     </div>
 
     <script>
-        const editButton = document.getElementById("editButton");
-        const saveButton = document.getElementById("saveButton");
-        const userDetails = document.getElementById("userDetails");
-
-        editButton.addEventListener("click", function() {
-            // Show input fields and hide text displays
-            userDetails.querySelectorAll('input').forEach(input => input.classList.remove('hidden'));
-            userDetails.querySelectorAll('span').forEach(span => span.classList.add('hidden'));
-            editButton.classList.add('hidden');
-            saveButton.classList.remove('hidden');
-        });
-
-        saveButton.addEventListener("click", function() {
-            // Validate and save the updated values (mock example, replace with actual save logic)
-            const name = document.getElementById("nameInput").value;
-            const address = document.getElementById("addressInput").value;
-            const phone = document.getElementById("phoneInput").value;
-            const email = document.getElementById("emailInput").value;
-
-            if (!name || !address || !phone || !email) {
-                document.getElementById("errorMessage").textContent = "All fields are required!";
-                return;
+        // Function to get email from cookie and fetch user details
+        function getEmailFromCookie() {
+            const name = "email=";
+            const decodedCookie = decodeURIComponent(document.cookie);
+            const cookieArray = decodedCookie.split(';');
+            for (let i = 0; i < cookieArray.length; i++) {
+                let cookie = cookieArray[i];
+                while (cookie.charAt(0) === ' ') {
+                    cookie = cookie.substring(1);
+                }
+                if (cookie.indexOf(name) === 0) {
+                    return cookie.substring(name.length, cookie.length);
+                }
             }
+            return "";
+        }
 
-            // Update the displayed values
-            document.getElementById("nameDisplay").textContent = name;
-            document.getElementById("addressDisplay").textContent = address;
-            document.getElementById("phoneDisplay").textContent = phone;
-            document.getElementById("emailDisplay").textContent = email;
+        // Fetch user details from backend using email
+        async function fetchUserDetails(email) {
+            try {
+                const response = await fetch(`/api/user?email=${email}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const userData = await response.json();
+                document.getElementById("nameDisplay").textContent = userData.name;
+                document.getElementById("emailDisplay").textContent = userData.email;
+                document.getElementById("userTypeDisplay").textContent = userData.userType;
+                document.getElementById("phoneDisplay").textContent = userData.phoneNumber;
+            } catch (error) {
+                document.getElementById("errorMessage").textContent = "Error fetching user details: " + error.message;
+            }
+        }
 
-            // Hide input fields and show text displays
-            userDetails.querySelectorAll('input').forEach(input => input.classList.add('hidden'));
-            userDetails.querySelectorAll('span').forEach(span => span.classList.remove('hidden'));
-            editButton.classList.remove('hidden');
-            saveButton.classList.add('hidden');
-        });
+        // On page load
+        window.onload = function() {
+            const email = getEmailFromCookie();
+            if (email) {
+                fetchUserDetails(email);
+            } else {
+                document.getElementById("errorMessage").textContent = "No email found in cookies.";
+            }
+        };
 
-        // Handle profile picture upload
+        // Handle profile picture upload (optional)
         document.getElementById('uploadPicture').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file) {
@@ -107,6 +97,7 @@
             }
         });
     </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

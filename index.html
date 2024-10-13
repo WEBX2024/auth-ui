@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup Form</title>
+    <title>Login Form</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
     <style>
         .hidden {
@@ -16,30 +16,25 @@
 </head>
 <body>
     <div class="container mt-5">
-        <h2>Signup Form</h2>
-        <form id="signupForm">
-            <div class="mb-3">
+        <h2>Login Form</h2>
+        <form id="loginForm">
+            <div class="mb-3" id="loginInputs">
                 <label for="userType" class="form-label">User Type</label>
                 <select class="form-select" id="userType" required>
-                    <option value="">Select user type</option>
+                    <option value="" disabled selected>Select user type</option>
                     <option value="admin">Admin</option>
                     <option value="normal">Normal User</option>
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label for="name" class="form-label">Name</label>
-                <input type="text" class="form-control" id="name" required>
-            </div>
-
-            <div class="mb-3">
+            <div class="mb-3" id="emailInput">
                 <label for="email" class="form-label">Email ID</label>
                 <input type="email" class="form-control" id="email" required>
             </div>
 
-            <div class="mb-3">
-                <label for="phone" class="form-label">Phone No</label>
-                <input type="tel" class="form-control" id="phone" required>
+            <div class="mb-3" id="passwordInput">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" required>
             </div>
 
             <div class="mb-3 hidden" id="adminIDDiv">
@@ -48,34 +43,46 @@
                 <div id="adminError" class="error"></div>
             </div>
 
-            <div class="mb-3">
-                <label for="password" class="form-label">Create Password</label>
-                <input type="password" class="form-control" id="password" required>
-            </div>
-
-            <div class="mb-3">
-                <label for="confirmPassword" class="form-label">Confirm Password</label>
-                <input type="password" class="form-control" id="confirmPassword" required>
-                <div id="passwordError" class="error"></div>
-            </div>
-
-            <div class="mb-3">
-                <button type="button" class="btn btn-primary" id="signupButton" disabled onclick="validateSignup()">Sign Up</button>
-                <button type="reset" class="btn btn-secondary">Reset</button>
-            </div>
-
             <div id="errorMessage" class="error"></div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-primary" id="getOtpButton" disabled>Get OTP</button>
+            </div>
+
+            <div class="mb-3">
+                <a href="signup.html" id="signupLink">Sign Up</a> | 
+                <a href="#" id="forgotPasswordLink" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">Forgot Password</a>
+            </div>
         </form>
+
+        <div id="otpSection" class="hidden">
+            <div class="mb-3">
+                <label for="otpInput" class="form-label">Enter OTP</label>
+                <input type="text" class="form-control" id="otpInput" required>
+                <div id="otpError" class="error"></div>
+            </div>
+            <div class="mb-3">
+                <button type="button" class="btn btn-success" id="verifyOtpButton">Verify OTP</button>
+            </div>
+        </div>
+        
+        <div id="successMessage" class="hidden alert alert-success">Login successful!</div>
     </div>
 
     <script>
-        // Show/hide Admin ID based on user type selection
         const userType = document.getElementById("userType");
         const adminIDDiv = document.getElementById("adminIDDiv");
         const adminError = document.getElementById("adminError");
-        const passwordError = document.getElementById("passwordError");
-        const signupButton = document.getElementById("signupButton");
+        const otpSection = document.getElementById("otpSection");
+        const getOtpButton = document.getElementById("getOtpButton");
+        const successMessage = document.getElementById("successMessage");
+        const otpInput = document.getElementById("otpInput");
+        const otpError = document.getElementById("otpError");
+        const errorMessage = document.getElementById("errorMessage");
 
+        let emailId;
+
+        // Show/Hide Admin ID input field based on user type
         userType.addEventListener("change", function() {
             if (this.value === "admin") {
                 adminIDDiv.classList.remove("hidden");
@@ -83,72 +90,98 @@
                 adminIDDiv.classList.add("hidden");
                 adminError.textContent = '';
             }
-
-            // Enable the signup button when user type is selected
-            signupButton.disabled = !this.value;
+            getOtpButton.disabled = this.value === "";
         });
 
-        async function validateSignup() {
-            const userTypeValue = userType.value;
-            const name = document.getElementById("name").value;
+        // On clicking 'Get OTP'
+        getOtpButton.addEventListener("click", async function() {
             const email = document.getElementById("email").value;
-            const phone = document.getElementById("phone").value;
             const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
             const adminId = document.getElementById("adminID").value;
-            const errorMessage = document.getElementById("errorMessage");
-
-            // Clear any previous errors
-            errorMessage.textContent = '';
-            adminError.textContent = '';
-            passwordError.textContent = '';
-
-            // Password match validation
-            if (password !== confirmPassword) {
-                passwordError.textContent = "Passwords do not match!";
-                return;
-            }
-
+            const userTypeValue = userType.value;
+            
+            emailId = email;
             // Prepare data for the request
-            const signupData = {
-                userType: userTypeValue,
-                name,
+            const loginData = {
                 email,
-                phone,
                 password,
-                adminId: userTypeValue === 'admin' ? adminId : null, // Set to null if normal user
+                adminId: userTypeValue === 'admin' ? adminId : null // Set to null if normal user
             };
 
+            // Send the login request to the backend
             try {
-                const response = await fetch('http://localhost:8001/auth/signup', {
+                const response = await fetch('http://localhost:8001/auth/send-otp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(signupData),
+                    body: JSON.stringify(loginData),
                 });
 
                 if (!response.ok) {
                     const errorResponse = await response.json();
-                    throw new Error(errorResponse.message || "Signup failed");
-                    errorMessage.textContent = 'Invalid Credentials';
+                    errorMessage.textContent = "Invalid credentials, OTP sent failed";
+                    throw new Error(errorResponse.message || "Login failed");
                 }
 
                 const result = await response.json();
-                alert(result.message || "Form submitted successfully!");
 
-                // Redirect to login.html after 10-second delay
-                setTimeout(function() {
-                    window.location.href = "login.html";
-                }, 1000);
+                // Hide form inputs and show OTP section
+                document.getElementById("loginInputs").classList.add("hidden");
+                document.getElementById("emailInput").classList.add("hidden");
+                document.getElementById("passwordInput").classList.add("hidden");
+                adminIDDiv.classList.add("hidden");
+                getOtpButton.classList.add("hidden");
+
+                otpSection.classList.remove("hidden");
 
             } catch (error) {
                 errorMessage.textContent = error.message;
             }
+        });
+
+        // Verify OTP functionality
+        document.getElementById("verifyOtpButton").addEventListener("click", async function() {
+            const enteredOtp = otpInput.value;
+
+            // Send the OTP verification request to the backend
+            try {
+                const response = await fetch('http://localhost:8001/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ otp: enteredOtp, email: emailId }),
+                });
+
+                if (!response.ok) {
+                    const errorResponse = await response.json();
+                    errorMessage.textContent = 'Invalid OTP';
+                    throw new Error(errorResponse.message || "OTP verification failed");
+                }
+
+                const userData = await response.json();
+                setCookie('email', emailId, 1);
+                setCookie('auth', userData.token, 1);
+
+                // If verification is successful
+                successMessage.classList.remove("hidden");
+
+                setTimeout(() => {
+                    window.location.href = 'profile.html';
+                }, 1000);
+
+            } catch (error) {
+                otpError.textContent = error.message;
+            }
+        });
+
+        function setCookie(name, value, days) {
+            const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+            document.cookie = `${name}=${value}; expires=${expires}; path=/`;
         }
     </script>
-
-    <!-- Bootstrap JS -->
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
