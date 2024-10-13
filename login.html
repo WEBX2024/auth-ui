@@ -79,21 +79,7 @@
         const otpInput = document.getElementById("otpInput");
         const otpError = document.getElementById("otpError");
         const errorMessage = document.getElementById("errorMessage");
-    
-        const correctOtp = "123456"; // Mock OTP value
-    
-        const users = {
-            'admin@example.com': {
-                password: 'adminpass',
-                userType: 'admin',
-                adminID: 'ADMIN123'  // Required for Admins
-            },
-            'user@example.com': {
-                password: 'userpass',
-                userType: 'normal'
-            }
-        };
-    
+
         // Function to validate credentials based on user type
         function validateCredentials(email, password, userType, adminID = null) {
             const user = users[email];

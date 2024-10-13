@@ -85,21 +85,8 @@
             }
 
             // Enable the signup button when user type is selected
-            if (this.value) {
-                signupButton.disabled = false;
-            } else {
-                signupButton.disabled = true;
-            }
+            signupButton.disabled = !this.value;
         });
-
-        // Mockup function to validate Admin ID from MongoDB
-        async function validateAdminID(adminID) {
-            // Simulate checking with the database.
-            // In real implementation, replace this part with a fetch or AJAX call
-            const validAdminIDs = ['admin123', 'admin456']; // Simulating MongoDB records
-
-            return validAdminIDs.includes(adminID);
-        }
 
         async function validateSignup() {
             const userTypeValue = userType.value;
@@ -122,22 +109,41 @@
                 return;
             }
 
-            // Admin ID validation if admin is selected
-            if (userTypeValue === 'admin') {
-                const isValidAdminID = await validateAdminID(adminID);
-                if (!isValidAdminID) {
-                    adminError.textContent = "Invalid Admin ID!";
-                    return;
+            // Prepare data for the request
+            const signupData = {
+                userType: userTypeValue,
+                name,
+                email,
+                phone,
+                password,
+                adminID: userTypeValue === 'admin' ? adminID : null, // Set to null if normal user
+            };
+
+            try {
+                const response = await fetch('http://localhost:8001/auth/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(signupData),
+                });
+
+                if (!response.ok) {
+                    const errorResponse = await response.json();
+                    throw new Error(errorResponse.message || "Signup failed");
                 }
+
+                const result = await response.json();
+                alert(result.message || "Form submitted successfully!");
+
+                // Redirect to login.html after 10-second delay
+                setTimeout(function() {
+                    window.location.href = "login.html";
+                }, 10000);
+
+            } catch (error) {
+                errorMessage.textContent = error.message;
             }
-
-            // If everything is valid
-            alert("Form submitted successfully!");
-
-            // Redirect to login.html after 10-second delay
-            setTimeout(function() {
-                window.location.href = "login.html";
-            }, 10000);
         }
     </script>
 
