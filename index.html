@@ -95,7 +95,7 @@
             const phone = document.getElementById("phone").value;
             const password = document.getElementById("password").value;
             const confirmPassword = document.getElementById("confirmPassword").value;
-            const adminID = document.getElementById("adminID").value;
+            const adminId = document.getElementById("adminID").value;
             const errorMessage = document.getElementById("errorMessage");
 
             // Clear any previous errors
@@ -116,7 +116,7 @@
                 email,
                 phone,
                 password,
-                adminID: userTypeValue === 'admin' ? adminID : null, // Set to null if normal user
+                adminId: userTypeValue === 'admin' ? adminId : null, // Set to null if normal user
             };
 
             try {
@@ -131,6 +131,7 @@
                 if (!response.ok) {
                     const errorResponse = await response.json();
                     throw new Error(errorResponse.message || "Signup failed");
+                    errorMessage.textContent = 'Invalid Credentials';
                 }
 
                 const result = await response.json();
@@ -139,7 +140,7 @@
                 // Redirect to login.html after 10-second delay
                 setTimeout(function() {
                     window.location.href = "login.html";
-                }, 10000);
+                }, 1000);
 
             } catch (error) {
                 errorMessage.textContent = error.message;

@@ -80,24 +80,8 @@
         const otpError = document.getElementById("otpError");
         const errorMessage = document.getElementById("errorMessage");
 
-        // Function to validate credentials based on user type
-        function validateCredentials(email, password, userType, adminID = null) {
-            const user = users[email];
-            if (!user) {
-                return { valid: false, message: 'Email not registered!' };
-            }
-            if (user.password !== password) {
-                return { valid: false, message: 'Incorrect password!' };
-            }
-            if (user.userType !== userType) {
-                return { valid: false, message: `Wrong user type selected! Expected ${user.userType}.` };
-            }
-            if (userType === 'admin' && adminID !== user.adminID) {
-                return { valid: false, message: 'Incorrect Admin ID!' };
-            }
-            return { valid: true };
-        }
-    
+        let emailId;
+
         // Show/Hide Admin ID input field based on user type
         userType.addEventListener("change", function() {
             if (this.value === "admin") {
@@ -108,45 +92,84 @@
             }
             getOtpButton.disabled = this.value === "";
         });
-    
+
         // On clicking 'Get OTP'
-        getOtpButton.addEventListener("click", function() {
+        getOtpButton.addEventListener("click", async function() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
-            const adminID = document.getElementById("adminID").value;
-    
-            // Validate credentials based on user type
-            const validation = validateCredentials(email, password, userType.value, adminID);
-            if (!validation.valid) {
-                errorMessage.textContent = validation.message;
-                return;
+            const adminId = document.getElementById("adminID").value;
+            const userTypeValue = userType.value;
+            
+            emailId = email;
+            // Prepare data for the request
+            const loginData = {
+                email,
+                password,
+                adminId: userTypeValue === 'admin' ? adminId : null // Set to null if normal user
+            };
+
+            // Send the login request to the backend
+            try {
+                const response = await fetch('http://localhost:8001/auth/send-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(loginData),
+                });
+
+                if (!response.ok) {
+                    const errorResponse = await response.json();
+                    errorMessage.textContent = "Invalid credentials, OTP sent failed";
+                    throw new Error(errorResponse.message || "Login failed");
+                }
+
+                const result = await response.json();
+
+                // Hide form inputs and show OTP section
+                document.getElementById("loginInputs").classList.add("hidden");
+                document.getElementById("emailInput").classList.add("hidden");
+                document.getElementById("passwordInput").classList.add("hidden");
+                adminIDDiv.classList.add("hidden");
+                getOtpButton.classList.add("hidden");
+
+                otpSection.classList.remove("hidden");
+
+            } catch (error) {
+                errorMessage.textContent = error.message;
             }
-    
-            // Hide form inputs and show OTP section
-            document.getElementById("loginInputs").classList.add("hidden");
-            document.getElementById("emailInput").classList.add("hidden");
-            document.getElementById("passwordInput").classList.add("hidden");
-            adminIDDiv.classList.add("hidden");
-            getOtpButton.classList.add("hidden");
-    
-            otpSection.classList.remove("hidden");
         });
-    
+
         // Verify OTP functionality
-        document.getElementById("verifyOtpButton").addEventListener("click", function() {
+        document.getElementById("verifyOtpButton").addEventListener("click", async function() {
             const enteredOtp = otpInput.value;
-    
-            if (enteredOtp !== correctOtp) {
-                otpError.textContent = "Invalid OTP! Please try again.";
-                return;
+
+            // Send the OTP verification request to the backend
+            try {
+                const response = await fetch('http://localhost:8001/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ otp: enteredOtp, email: emailId }),
+                });
+
+                if (!response.ok) {
+                    const errorResponse = await response.json();
+                    errorMessage.textContent = 'Invalid OTP';
+                    throw new Error(errorResponse.message || "OTP verification failed");
+                }
+
+                // If verification is successful
+                successMessage.classList.remove("hidden");
+
+                setTimeout(() => {
+                    window.location.href = 'profile.html';
+                }, 1000);
+
+            } catch (error) {
+                otpError.textContent = error.message;
             }
-    
-            otpSection.classList.add("hidden");
-            successMessage.classList.remove("hidden");
-    
-            setTimeout(() => {
-                window.location.href = 'profile.html';
-            }, 1000);
         });
     </script>
     
