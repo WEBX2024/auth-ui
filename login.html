@@ -21,7 +21,7 @@
             <div class="mb-3" id="loginInputs">
                 <label for="userType" class="form-label">User Type</label>
                 <select class="form-select" id="userType" required>
-                    <option value="" disabled selected>Select user type</option> <!-- Acts as placeholder -->
+                    <option value="" disabled selected>Select user type</option>
                     <option value="admin">Admin</option>
                     <option value="normal">Normal User</option>
                 </select>
@@ -49,14 +49,12 @@
                 <button type="button" class="btn btn-primary" id="getOtpButton" disabled>Get OTP</button>
             </div>
 
-            <!-- Anchors for Signup and Forgot Password -->
             <div class="mb-3">
                 <a href="index.html" id="signupLink">Sign Up</a> | 
                 <a href="#" id="forgotPasswordLink" data-bs-toggle="modal" data-bs-target="#forgotPasswordModal">Forgot Password</a>
             </div>
         </form>
 
-        <!-- OTP Verification (appears after Get OTP button is clicked) -->
         <div id="otpSection" class="hidden">
             <div class="mb-3">
                 <label for="otpInput" class="form-label">Enter OTP</label>
@@ -68,51 +66,7 @@
             </div>
         </div>
         
-        <!-- Success Message -->
         <div id="successMessage" class="hidden alert alert-success">Login successful!</div>
-    </div>
-
-    <!-- Modal for Forgot Password -->
-    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="forgotPasswordModalLabel">Forgot Password</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Email Input for Forgot Password -->
-                    <div class="mb-3" id="forgotEmailSection">
-                        <label for="forgotEmail" class="form-label">Email ID</label>
-                        <input type="email" class="form-control" id="forgotEmail">
-                        <button type="button" class="btn btn-primary mt-3" id="forgotGetOtpButton">Get OTP</button>
-                        <div id="emailError" class="error"></div>
-                    </div>
-
-                    <!-- OTP Verification Section for Forgot Password -->
-                    <div class="mb-3 hidden" id="forgotOtpSection">
-                        <label for="forgotOtpInput" class="form-label">Enter OTP</label>
-                        <input type="text" class="form-control" id="forgotOtpInput">
-                        <button type="button" class="btn btn-success mt-3" id="verifyForgotOtpButton">Verify OTP</button>
-                        <div id="otpError" class="error"></div>
-                    </div>
-
-                    <!-- OTP and New Password Section (appears after OTP verification) -->
-                    <div id="resetPasswordSection" class="hidden">
-                        <div class="mb-3">
-                            <label for="newPassword" class="form-label">Create New Password</label>
-                            <input type="password" class="form-control" id="newPassword">
-                        </div>
-                        <div class="mb-3">
-                            <label for="confirmNewPassword" class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control" id="confirmNewPassword">
-                            <div id="passwordError" class="error"></div>
-                        </div>
-                        <button type="button" class="btn btn-success" id="resetPasswordButton">Submit</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -124,11 +78,41 @@
         const successMessage = document.getElementById("successMessage");
         const otpInput = document.getElementById("otpInput");
         const otpError = document.getElementById("otpError");
-
-        // Mock OTP for login (for testing purpose)
+        const errorMessage = document.getElementById("errorMessage");
+    
         const correctOtp = "123456"; // Mock OTP value
-
-        // Toggle adminID field visibility based on user type
+    
+        const users = {
+            'admin@example.com': {
+                password: 'adminpass',
+                userType: 'admin',
+                adminID: 'ADMIN123'  // Required for Admins
+            },
+            'user@example.com': {
+                password: 'userpass',
+                userType: 'normal'
+            }
+        };
+    
+        // Function to validate credentials based on user type
+        function validateCredentials(email, password, userType, adminID = null) {
+            const user = users[email];
+            if (!user) {
+                return { valid: false, message: 'Email not registered!' };
+            }
+            if (user.password !== password) {
+                return { valid: false, message: 'Incorrect password!' };
+            }
+            if (user.userType !== userType) {
+                return { valid: false, message: `Wrong user type selected! Expected ${user.userType}.` };
+            }
+            if (userType === 'admin' && adminID !== user.adminID) {
+                return { valid: false, message: 'Incorrect Admin ID!' };
+            }
+            return { valid: true };
+        }
+    
+        // Show/Hide Admin ID input field based on user type
         userType.addEventListener("change", function() {
             if (this.value === "admin") {
                 adminIDDiv.classList.remove("hidden");
@@ -136,98 +120,50 @@
                 adminIDDiv.classList.add("hidden");
                 adminError.textContent = '';
             }
-            // Enable or disable the Get OTP button based on the selection
             getOtpButton.disabled = this.value === "";
         });
-
-        // On clicking 'Get OTP' in login form
+    
+        // On clicking 'Get OTP'
         getOtpButton.addEventListener("click", function() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
             const adminID = document.getElementById("adminID").value;
-
-            // Validate credentials (mock validation, replace with real DB validation)
-            if (userType.value === 'admin' && adminID === '') {
-                adminError.textContent = "Admin ID is required!";
+    
+            // Validate credentials based on user type
+            const validation = validateCredentials(email, password, userType.value, adminID);
+            if (!validation.valid) {
+                errorMessage.textContent = validation.message;
                 return;
             }
-
+    
             // Hide form inputs and show OTP section
             document.getElementById("loginInputs").classList.add("hidden");
             document.getElementById("emailInput").classList.add("hidden");
             document.getElementById("passwordInput").classList.add("hidden");
             adminIDDiv.classList.add("hidden");
             getOtpButton.classList.add("hidden");
-
+    
             otpSection.classList.remove("hidden");
         });
-
-        // On clicking 'Verify OTP' in login form
+    
+        // Verify OTP functionality
         document.getElementById("verifyOtpButton").addEventListener("click", function() {
             const enteredOtp = otpInput.value;
-
+    
             if (enteredOtp !== correctOtp) {
                 otpError.textContent = "Invalid OTP! Please try again.";
                 return;
             }
-
-            // Hide OTP section and show success message
+    
             otpSection.classList.add("hidden");
             successMessage.classList.remove("hidden");
-
-            // Redirect to profile page after a short delay (e.g., 1 second)
+    
             setTimeout(() => {
-                window.location.href = 'profile.html'; // Redirect to profile page
+                window.location.href = 'profile.html';
             }, 1000);
         });
-
-        // On clicking 'Get OTP' in forgot password modal
-        document.getElementById("forgotGetOtpButton").addEventListener("click", function() {
-            const forgotEmail = document.getElementById("forgotEmail").value;
-
-            // Mockup function to check if email is in the MongoDB database
-            // Replace this part with your real MongoDB check
-            const registeredEmails = ['test@example.com']; // Simulating MongoDB records
-            if (!registeredEmails.includes(forgotEmail)) {
-                document.getElementById("emailError").textContent = "Email not registered!";
-                return;
-            }
-
-            // Hide email section and show OTP section
-            document.getElementById("forgotEmailSection").classList.add("hidden");
-            document.getElementById("forgotOtpSection").classList.remove("hidden");
-        });
-
-        // On clicking 'Verify OTP' in forgot password modal
-        document.getElementById("verifyForgotOtpButton").addEventListener("click", function() {
-            const forgotOtpInput = document.getElementById("forgotOtpInput").value;
-
-            // Mockup OTP verification (replace this logic with real OTP verification)
-            const correctForgotOtp = "123456"; // Mock OTP value
-            if (forgotOtpInput !== correctForgotOtp) {
-                document.getElementById("otpError").textContent = "Invalid OTP!";
-                return;
-            }
-
-            // Hide OTP section and show reset password section
-            document.getElementById("forgotOtpSection").classList.add("hidden");
-            document.getElementById("resetPasswordSection").classList.remove("hidden");
-        });
-
-        // On clicking 'Reset Password'
-        document.getElementById("resetPasswordButton").addEventListener("click", function() {
-            const newPassword = document.getElementById("newPassword").value;
-            const confirmNewPassword = document.getElementById("confirmNewPassword").value;
-
-            if (newPassword !== confirmNewPassword) {
-                document.getElementById("passwordError").textContent = "Passwords do not match!";
-                return;
-            }
-
-            // Reset password logic goes here
-            alert("Password has been reset successfully!");
-        });
     </script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
