@@ -1,194 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Signup Form</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    .hidden {
-      display: none;
-    }
-    .error {
-      color: red;
-    }
-    .valid {
-      color: green;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        .hidden {
+            display: none;
+        }
+        .error {
+            color: red;
+        }
+    </style>
 </head>
 <body>
-  <div class="container mt-5">
-    <h2 class="text-center mb-4">Sign Up</h2>
-    
-    <!-- User type selector -->
-    <div class="form-group mb-4">
-      <label for="userType">Select User Type:</label>
-      <select class="form-select" id="userType" onchange="toggleForm()">
-        <option value="normal">Normal User</option>
-        <option value="admin">Admin</option>
-      </select>
+    <div class="container mt-5">
+        <h2>Signup Form</h2>
+        <form id="signupForm">
+            <div class="mb-3">
+                <label for="userType" class="form-label">User Type</label>
+                <select class="form-select" id="userType" required>
+                    <option value="">Select user type</option>
+                    <option value="admin">Admin</option>
+                    <option value="normal">Normal User</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="address" class="form-label">Address</label>
+                <input type="text" class="form-control" id="address" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email ID</label>
+                <input type="email" class="form-control" id="email" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="phone" class="form-label">Phone No</label>
+                <input type="tel" class="form-control" id="phone" required>
+            </div>
+
+            <div class="mb-3 hidden" id="adminIDDiv">
+                <label for="adminID" class="form-label">Admin ID</label>
+                <input type="text" class="form-control" id="adminID">
+                <div id="adminError" class="error"></div>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Create Password</label>
+                <input type="password" class="form-control" id="password" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                <input type="password" class="form-control" id="confirmPassword" required>
+                <div id="passwordError" class="error"></div>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-primary" onclick="validateSignup()">Sign Up</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+
+            <div id="errorMessage" class="error"></div>
+        </form>
     </div>
-    
-    <!-- Admin Signup Form -->
-    <form id="adminForm" class="hidden">
-      <h4 class="mb-3">Admin Signup</h4>
-      <div class="form-group mb-3">
-        <label for="adminName">Name</label>
-        <input type="text" class="form-control" id="adminName" placeholder="Enter name" required>
-      </div>
-      <div class="form-group mb-3">
-        <label for="adminAddress">Address</label>
-        <input type="text" class="form-control" id="adminAddress" placeholder="Enter address" required>
-      </div>
-      <div class="form-group mb-3">
-        <label for="adminEmail">Email</label>
-        <input type="email" class="form-control" id="adminEmail" placeholder="Enter email" required>
-      </div>
-      <div class="form-group mb-3">
-        <label for="adminPhone">Phone Number</label>
-        <input type="tel" class="form-control" id="adminPhone" placeholder="Enter phone number" required>
-      </div>
-      <div class="form-group mb-3">
-        <label for="adminID">Special Admin ID</label>
-        <input type="text" class="form-control" id="adminID" placeholder="Enter Admin ID" required>
-        <span id="adminIDStatus" class="error"></span>
-      </div>
-      <div class="form-group mb-3">
-        <label for="adminPassword">Create Password</label>
-        <input type="password" class="form-control" id="adminPassword" placeholder="Create password" required>
-      </div>
-      <div class="form-group mb-3">
-        <label for="adminConfirmPassword">Re-enter Password</label>
-        <input type="password" class="form-control" id="adminConfirmPassword" placeholder="Re-enter password" required>
-        <span id="adminPasswordError" class="error"></span>
-      </div>
-      <button type="submit" class="btn btn-primary" onclick="validateAdminForm(event)">Submit</button>
-    </form>
 
-    <!-- Normal User Signup Form -->
-    <form id="userForm" class="hidden">
-      <h4 class="mb-3">Normal User Signup</h4>
-      <div class="form-group mb-3">
-        <label for="userName">Name</label>
-        <input type="text" class="form-control" id="userName" placeholder="Enter name" required>
-      </div>
-      <div class="form-group mb-3">
-        <label for="userAddress">Address</label>
-        <input type="text" class="form-control" id="userAddress" placeholder="Enter address" required>
-      </div>
-      <div class="form-group mb-3">
-        <label for="userEmail">Email</label>
-        <input type="email" class="form-control" id="userEmail" placeholder="Enter email" required>
-      </div>
-      <div class="form-group mb-3">
-        <label for="userPhone">Phone Number</label>
-        <input type="tel" class="form-control" id="userPhone" placeholder="Enter phone number" required>
-      </div>
-      <div class="form-group mb-3">
-        <label for="userPassword">Create Password</label>
-        <input type="password" class="form-control" id="userPassword" placeholder="Create password" required>
-      </div>
-      <div class="form-group mb-3">
-        <label for="userConfirmPassword">Re-enter Password</label>
-        <input type="password" class="form-control" id="userConfirmPassword" placeholder="Re-enter password" required>
-        <span id="userPasswordError" class="error"></span>
-      </div>
-      <button type="submit" class="btn btn-primary" onclick="validateUserForm(event)">Submit</button>
-    </form>
-  </div>
+    <script>
+        // Show/hide Admin ID based on user type selection
+        const userType = document.getElementById("userType");
+        const adminIDDiv = document.getElementById("adminIDDiv");
+        const adminError = document.getElementById("adminError");
+        const passwordError = document.getElementById("passwordError");
 
-  <script>
-    function toggleForm() {
-      const userType = document.getElementById('userType').value;
-      document.getElementById('adminForm').classList.toggle('hidden', userType !== 'admin');
-      document.getElementById('userForm').classList.toggle('hidden', userType !== 'normal');
-    }
-
-    function validatePassword(password, confirmPassword, errorElementId) {
-      const errorElement = document.getElementById(errorElementId);
-      if (password !== confirmPassword) {
-        errorElement.textContent = "Passwords do not match!";
-        return false;
-      } else {
-        errorElement.textContent = "";
-        return true;
-      }
-    }
-
-    function redirectToLogin() {
-      // Redirect to login page after 3 seconds
-      setTimeout(function() {
-        window.location.href = "login.html"; // Change this URL to your actual login page
-      }, 3000); // 3-second pause before redirecting
-    }
-
-    async function validateUserForm(event) {
-      event.preventDefault();
-      const password = document.getElementById('userPassword').value;
-      const confirmPassword = document.getElementById('userConfirmPassword').value;
-
-      if (validatePassword(password, confirmPassword, 'userPasswordError')) {
-        const userData = {
-          name: document.getElementById('userName').value,
-          address: document.getElementById('userAddress').value,
-          email: document.getElementById('userEmail').value,
-          phone: document.getElementById('userPhone').value,
-          password,
-          role: 'user'  // Set role as 'user' for normal users
-        };
-
-        const response = await fetch('http://localhost:8001/auth/signup', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData),
+        userType.addEventListener("change", function() {
+            if (this.value === "admin") {
+                adminIDDiv.classList.remove("hidden");
+            } else {
+                adminIDDiv.classList.add("hidden");
+                adminError.textContent = '';
+            }
         });
 
-        if (response.ok) {
-          alert('User form submitted successfully! Redirecting to login page...');
-          redirectToLogin();  // Redirect after successful signup
-        } else {
-          const errorData = await response.json();
-          alert(`Error: ${errorData.msg}`);
+        // Mockup function to validate Admin ID from MongoDB
+        async function validateAdminID(adminID) {
+            // Simulate checking with the database.
+            // In real implementation, replace this part with a fetch or AJAX call
+            const validAdminIDs = ['admin123', 'admin456']; // Simulating MongoDB records
+
+            return validAdminIDs.includes(adminID);
         }
-      }
-    }
 
-    async function validateAdminForm(event) {
-      event.preventDefault();
-      const password = document.getElementById('adminPassword').value;
-      const confirmPassword = document.getElementById('adminConfirmPassword').value;
+        async function validateSignup() {
+            const userTypeValue = userType.value;
+            const name = document.getElementById("name").value;
+            const address = document.getElementById("address").value;
+            const email = document.getElementById("email").value;
+            const phone = document.getElementById("phone").value;
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
+            const adminID = document.getElementById("adminID").value;
+            const errorMessage = document.getElementById("errorMessage");
 
-        if (validatePassword(password, confirmPassword, 'adminPasswordError')) {
-          const adminData = {
-            name: document.getElementById('adminName').value,
-            address: document.getElementById('adminAddress').value,
-            email: document.getElementById('adminEmail').value,
-            phone: document.getElementById('adminPhone').value,
-            password: password,
-            role: 'admin',  // Set role as 'admin' for admin users
-            adminID: document.getElementById('adminID').value  // Include the special admin ID
-          };
+            // Clear any previous errors
+            errorMessage.textContent = '';
+            adminError.textContent = '';
+            passwordError.textContent = '';
 
-          const response = await fetch('http://localhost:8001/signup', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(adminData),
-          });
+            // Password match validation
+            if (password !== confirmPassword) {
+                passwordError.textContent = "Passwords do not match!";
+                return;
+            }
 
-          if (response.ok) {
-            alert('Admin form submitted successfully! Redirecting to login page...');
-            redirectToLogin();  // Redirect after successful signup
-          } else {
-            const errorData = await response.json();
-            alert(`Error: ${errorData.msg}`);
-          }
+            // Admin ID validation if admin is selected
+            if (userTypeValue === 'admin') {
+                const isValidAdminID = await validateAdminID(adminID);
+                if (!isValidAdminID) {
+                    adminError.textContent = "Invalid Admin ID!";
+                    return;
+                }
+            }
+
+            // If everything is valid
+            alert("Form submitted successfully!");
         }
-    }
-  </script>
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
