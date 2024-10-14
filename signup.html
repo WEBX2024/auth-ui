@@ -69,7 +69,7 @@
     </div>
 
     <script>
-        // Show/hide Admin ID based on user type selection
+       
         const userType = document.getElementById("userType");
         const adminIDDiv = document.getElementById("adminIDDiv");
         const adminError = document.getElementById("adminError");
@@ -84,7 +84,7 @@
                 adminError.textContent = '';
             }
 
-            // Enable the signup button when user type is selected
+            
             signupButton.disabled = !this.value;
         });
 
@@ -98,25 +98,25 @@
             const adminId = document.getElementById("adminID").value;
             const errorMessage = document.getElementById("errorMessage");
 
-            // Clear any previous errors
+            
             errorMessage.textContent = '';
             adminError.textContent = '';
             passwordError.textContent = '';
 
-            // Password match validation
+            
             if (password !== confirmPassword) {
                 passwordError.textContent = "Passwords do not match!";
                 return;
             }
 
-            // Prepare data for the request
+            
             const signupData = {
                 userType: userTypeValue,
                 name,
                 email,
                 phone,
                 password,
-                adminId: userTypeValue === 'admin' ? adminId : null, // Set to null if normal user
+                adminId: userTypeValue === 'admin' ? adminId : null,
             };
 
             try {
@@ -137,7 +137,7 @@
                 const result = await response.json();
                 alert(result.message || "Form submitted successfully!");
 
-                // Redirect to login.html after 10-second delay
+                
                 setTimeout(function() {
                     window.location.href = "index.html";
                 }, 1000);
@@ -148,7 +148,7 @@
         }
     </script>
 
-    <!-- Bootstrap JS -->
+   
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
